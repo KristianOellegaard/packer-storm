@@ -1,7 +1,7 @@
 packer-storm
 ============
 
-Build Apache (Incubator) Storm with packer. Made for AWS - could work with any packer backend.
+Build Apache (Incubator) [Storm](https://storm.incubator.apache.org/) with [packer](http://www.packer.io/). Made for AWS - could work with any packer backend.
 
 Usage
 -----
