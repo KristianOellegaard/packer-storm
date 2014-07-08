@@ -15,4 +15,6 @@ Make sure you have the AWS key and secret key environment variables and create a
 }
 ```
 
+```bash
 packer build -var-file=vars.json storm.json
+```
