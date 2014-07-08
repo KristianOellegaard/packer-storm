@@ -1,0 +1,67 @@
+{
+  "variables": {
+      "aws_access_key": "{{ env `AWS_ACCESS_KEY_ID` }}",
+      "aws_secret_key": "{{ env `AWS_SECRET_ACCESS_KEY` }}",
+      "base_ami": "ami-776d9700",
+      "base_ami_name": "Ubuntu Server 14.04 LTS (HVM)",
+      "version": "0.9.2",
+      "revision": 1,
+      "app": "storm",
+      "zookeeper_server": null,
+      "nimbus_host": null
+    },
+    "builders": [
+    {
+        "name": "nimbus",
+        "type": "amazon-ebs",
+        "region": "eu-west-1",
+        "source_ami": "{{user `base_ami`}}",
+        "instance_type": "m3.medium",
+        "ssh_username": "ubuntu",
+
+        "access_key": "{{user `aws_access_key`}}",
+        "secret_key": "{{user `aws_secret_key`}}",
+
+        "ami_name": "{{ user `app` }}_nimbus-{{user `version`}}-{{user `revision`}}-x86_64-{{isotime | clean_ami_name}}",
+        "ami_description": "name={{user `app`}}_nimbus, arch=x86_64, ancestor_name={{user `base_ami_name`}}, ancestor_id={{user `base_ami`}}, ancestor_version=",
+        "tags": {
+          "appversion": "{{user `app`}}_nimbus-{{user `version`}}-{{user `revision`}}"
+        }
+
+   },{
+        "name": "supervisor",
+        "type": "amazon-ebs",
+        "region": "eu-west-1",
+        "source_ami": "{{user `base_ami`}}",
+        "instance_type": "m3.medium",
+        "ssh_username": "ubuntu",
+
+        "access_key": "{{user `aws_access_key`}}",
+        "secret_key": "{{user `aws_secret_key`}}",
+
+        "ami_name": "{{ user `app` }}_supervisor-{{user `version`}}-{{user `revision`}}-x86_64-{{isotime | clean_ami_name}}",
+        "ami_description": "name={{user `app`}}_supervisor, arch=x86_64, ancestor_name={{user `base_ami_name`}}, ancestor_id={{user `base_ami`}}, ancestor_version=",
+        "tags": {
+          "appversion": "{{user `app`}}_supervisor-{{user `version`}}-{{user `revision`}}"
+        }
+
+   }],
+    "provisioners": [{
+       "type": "shell",
+       "script": "install_{{ user `app` }}.sh",
+       "environment_vars": ["ZOOKEEPER_SERVER={{ user `zookeeper_server` }}", "NIMBUS_HOST={{ user `nimbus_host` }}"],
+       "execute_command": "sudo {{ .Vars }} bash -xe {{.Path}}"
+    },{
+       "type": "shell",
+       "script": "install_{{ user `app` }}_nimbus.sh",
+       "only": ["nimbus"],
+       "environment_vars": ["ZOOKEEPER_SERVER={{ user `zookeeper_server` }}", "NIMBUS_HOST={{ user `nimbus_host` }}"],
+       "execute_command": "sudo {{ .Vars }} bash -xe {{.Path}}"
+    },{
+       "type": "shell",
+       "script": "install_{{ user `app` }}_supervisor.sh",
+       "only": ["supervisor"],
+       "environment_vars": ["ZOOKEEPER_SERVER={{ user `zookeeper_server` }}", "NIMBUS_HOST={{ user `nimbus_host` }}"],
+       "execute_command": "sudo {{ .Vars }} bash -xe {{.Path}}"
+    }]
+}
